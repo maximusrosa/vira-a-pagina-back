@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int        @id @default(autoincrement())
+  name               String
+  email              String     @unique
+  password           String
+  course             String
+  contact            String?
+  rating             Float?
+  booksOwned         Book[]     @relation("UserBooks")
+  providedExchanges  Exchange[] @relation("ProviderExchanges")
+  requestedExchanges Exchange[] @relation("RequesterExchanges")
+  createdAt          DateTime   @default(now())
+}
+
+model Book {
+  id          Int        @id @default(autoincrement())
+  title       String
+  author      String
+  year        Int
+  discipline  String
+  condition   String // new, like new, good, acceptable
+  description String?
+  //images           String[]   // URLs to images
+  status      String // available, reserved, traded
+  owner       User       @relation("UserBooks", fields: [ownerId], references: [id])
+  ownerId     Int
+  exchanges   Exchange[]
+  createdAt   DateTime   @default(now())
+}
+
+model Exchange {
+  id             Int       @id @default(autoincrement())
+  book           Book      @relation(fields: [bookId], references: [id])
+  bookId         Int
+  provider       User      @relation("ProviderExchanges", fields: [providerId], references: [id])
+  providerId     Int
+  requester      User      @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  requesterId    Int
+  status         String // requested, accepted, completed, canceled
+  requestDate    DateTime  @default(now())
+  completionDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
