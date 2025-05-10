@@ -22,6 +22,19 @@ export class UserService {
     });
   }
 
+  async findByEmail(email: string): Promise<any | undefined> {
+    return await this.databaseService.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+  }
+
   async update(id: number, updateUserDto: Prisma.UserUpdateInput) {
     return this.databaseService.user.update({
       where: {

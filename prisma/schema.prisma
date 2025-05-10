@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -14,18 +14,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum BookCondition {
+  LIKE_NEW
+  GOOD
+  ACCEPTABLE
+}
+
+enum BookStatus {
+  AVAILABLE
+  RESERVED
+  TRADED
+}
+
+enum ExchangeStatus {
+  REQUESTED
+  ACCEPTED
+  COMPLETED
+  CANCELED
+}
+
+enum UserRole {
+  USER_MODERATOR
+  EXCHANGES_MODERATOR
+  STUDENT
+}
+
 model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  password     String
-  course       String
-  contact      String?
-  rating       Float?
-  booksOwned   Book[]     @relation("UserBooks")
+  id               Int        @id @default(autoincrement())
+  name             String
+  email            String     @unique
+  password         String
+  role             UserRole   @default(STUDENT)
+  createdAt        DateTime   @default(now())
+  
+  // Relations for role-specific profiles
+  userModerator     UserModerator?
+  exchangesModerator ExchangesModerator?
+  student           Student?
+}
+
+model UserModerator {
+  id              Int      @id @default(autoincrement())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          Int      @unique
+  lastActivityAt  DateTime @default(now())
+}
+
+model ExchangesModerator {
+  id                Int      @id @default(autoincrement())
+  user              User     @relation(fields: [userId], references: [id])
+  userId            Int      @unique
+  moderatedExchanges Int     @default(0)
+  lastActivityAt    DateTime @default(now())
+}
+
+model Student {
+  id              Int      @id @default(autoincrement())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          Int      @unique
+  studentId       String?
+  course           String?
+  contact          String?
+  rating           Float?   
+  booksOwned       Book[]     @relation("UserBooks")
   providedExchanges Exchange[] @relation("ProviderExchanges")
   requestedExchanges Exchange[] @relation("RequesterExchanges")
-  createdAt    DateTime   @default(now())
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model Book {
@@ -34,11 +89,11 @@ model Book {
   author           String
   year             Int
   discipline       String
-  condition        String     // new, like new, good, acceptable
+  condition        BookCondition
   description      String?
   //images           String[]   // URLs to images
-  status           String     // available, reserved, traded
-  owner            User       @relation("UserBooks", fields: [ownerId], references: [id])
+  status           BookStatus
+  owner            Student    @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
   exchanges        Exchange[]
   createdAt        DateTime   @default(now())
@@ -48,13 +103,23 @@ model Exchange {
   id               Int       @id @default(autoincrement())
   book             Book      @relation(fields: [bookId], references: [id])
   bookId           Int
-  provider         User      @relation("ProviderExchanges", fields: [providerId], references: [id])
+  provider         Student   @relation("ProviderExchanges", fields: [providerId], references: [id])
   providerId       Int
-  requester        User      @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  requester        Student   @relation("RequesterExchanges", fields: [requesterId], references: [id])
   requesterId      Int
-  status           String    // requested, accepted, completed, canceled
+  status           ExchangeStatus
   requestDate      DateTime  @default(now())
   completionDate   DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+model Message {
+  id               Int       @id @default(autoincrement())
+  sender           Student   @relation("SentMessages", fields: [senderId], references: [id])
+  senderId         Int
+  receiver         Student   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId       Int
+  content          String
+  timestamp        DateTime  @default(now())
 }
