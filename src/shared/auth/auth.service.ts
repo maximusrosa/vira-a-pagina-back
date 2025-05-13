@@ -35,9 +35,9 @@ export class AuthService {
     async login(user: any) {
         // Dados de usuário que serão usados para criar o token.
         const payload = {
-            email: user._doc.email,
-            sub: user._doc._id,
-            role: user._doc.role,
+            email: user.email,
+            sub: user._id,
+            role: user.role,
         };
         console.log(user);
         

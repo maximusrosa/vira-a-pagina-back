@@ -21,7 +21,7 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @Post('/login')
     @HttpCode(HttpStatus.OK)
-    async login(@Request() req) {
+    async login(@Request() req: { user: any }) {
         const token = this.authService.login(req.user);
 
         if (!token) throw new HttpException('Invalid Credentials', 401);
