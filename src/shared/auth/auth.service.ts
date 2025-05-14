@@ -41,6 +41,7 @@ export class AuthService {
         
         // Cria token.
         return {
+            id: user.id,
             role: user.role,
             token: this.jwtService.sign(payload),
         };
