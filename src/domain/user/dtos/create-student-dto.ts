@@ -1,17 +1,17 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString} from 'class-validator';
 
 export class CreateStudentDto {
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  studentId?: string;
+  uniCard: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  course?: string;
+  course: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  contact?: string;
+  contact: string;
 
   @IsOptional()
   rating?: number;

@@ -1,15 +1,18 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsEnum, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsEnum, ValidateNested, Matches} from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserRole } from '../../../core/enums/user-role.enum';
 import { CreateStudentDto } from './create-student-dto';
-import { CreateUserModeratorDto } from './create-user-moderator-dto';
-import { CreateExchangesModeratorDto } from './create-exchanges-moderator-dto';
+import { CreateModeratorDto } from './create-moderator-dto';
+
 
 export class CreateUserDto {
+  // Atributos comuns
   @IsNotEmpty()
   @IsString()
   name: string;
 
+  @IsNotEmpty()
+  @IsString()
   @IsEmail({}, { message: 'Invalid Email' })
   email: string;
 
@@ -18,22 +21,21 @@ export class CreateUserDto {
   password: string;
   confirmPassword: string;
 
-  @IsNotEmpty()
-  @IsEnum(UserRole, { message: 'Invalid Role' })
-  role: UserRole;
-
   @IsOptional()
+  @IsEnum(UserRole, { message: 'Invalid Role' })
+  role?: UserRole = UserRole.STUDENT;
+
+  // Atributos específicos
   @ValidateNested()
   @Type(() => CreateStudentDto)
+  @IsOptional({ groups: [UserRole.MODERATOR] })
+  @IsNotEmpty({ 
+    groups: [UserRole.STUDENT],
+    message: 'Student data is required when role is STUDENT' 
+  })
   student?: CreateStudentDto;
 
-  @IsOptional()
   @ValidateNested()
-  @Type(() => CreateUserModeratorDto)
-  userModerator?: CreateUserModeratorDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateExchangesModeratorDto)
-  exchangesModerator?: CreateExchangesModeratorDto;
+  @Type(() => CreateModeratorDto)
+  moderator?: CreateModeratorDto;
 }

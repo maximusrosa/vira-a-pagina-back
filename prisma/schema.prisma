@@ -22,7 +22,6 @@ enum BookCondition {
 
 enum BookStatus {
   AVAILABLE
-  RESERVED
   TRADED
 }
 
@@ -35,7 +34,7 @@ enum ExchangeStatus {
 
 enum UserRole {
   USER_MODERATOR
-  EXCHANGES_MODERATOR
+  MODERATOR
   STUDENT
 }
 
@@ -47,34 +46,26 @@ model User {
   role             UserRole   @default(STUDENT)
   createdAt        DateTime   @default(now())
   
-  // Relations for role-specific profiles
-  userModerator     UserModerator?
-  exchangesModerator ExchangesModerator?
-  student           Student?
+  // Relation for role-specific profile
+  studentInfo      Student?
+  moderatorInfo    Moderator?
 }
 
-model UserModerator {
-  id              Int      @id @default(autoincrement())
-  user            User     @relation(fields: [userId], references: [id])
-  userId          Int      @unique
-  lastActivityAt  DateTime @default(now())
-}
-
-model ExchangesModerator {
-  id                Int      @id @default(autoincrement())
-  user              User     @relation(fields: [userId], references: [id])
-  userId            Int      @unique
-  moderatedExchanges Int     @default(0)
-  lastActivityAt    DateTime @default(now())
+model Moderator {
+  id               Int        @id @default(autoincrement())
+  user             User       @relation(fields: [userId], references: [id])
+  userId           Int        @unique
+  authorizedExchanges Exchange[] @relation("AuthorizedExchanges")
+  authorizedBooks   Book[]     @relation("AuthorizedBooks")
 }
 
 model Student {
   id              Int      @id @default(autoincrement())
   user            User     @relation(fields: [userId], references: [id])
   userId          Int      @unique
-  studentId       String?
-  course           String?
-  contact          String?
+  uniCard         String  @unique
+  course           String
+  contact          String
   rating           Float?   
   booksOwned       Book[]     @relation("UserBooks")
   providedExchanges Exchange[] @relation("ProviderExchanges")
@@ -96,6 +87,8 @@ model Book {
   owner            Student    @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
   exchanges        Exchange[]
+  authorizer       Moderator  @relation("AuthorizedBooks", fields: [authorizerId], references: [id])
+  authorizerId     Int
   createdAt        DateTime   @default(now())
 }
 
@@ -107,11 +100,11 @@ model Exchange {
   providerId       Int
   requester        Student   @relation("RequesterExchanges", fields: [requesterId], references: [id])
   requesterId      Int
+  authorizer       Moderator @relation("AuthorizedExchanges", fields: [authorizerId], references: [id])
+  authorizerId     Int
   status           ExchangeStatus
   requestDate      DateTime  @default(now())
   completionDate   DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
 }
 
 model Message {
