@@ -31,6 +31,7 @@ export class UserService {
         id: true,
         email: true,
         password: true,
+        role: true,
       },
     });
   }

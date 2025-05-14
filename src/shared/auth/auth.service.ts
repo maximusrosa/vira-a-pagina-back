@@ -37,13 +37,12 @@ export class AuthService {
         const payload = {
             email: user.email,
             sub: user._id,
-            role: user.role,
         };
-        console.log(user);
         
         // Cria token.
         return {
-            access_token: this.jwtService.sign(payload),
+            role: user.role,
+            token: this.jwtService.sign(payload),
         };
     }
 
