@@ -6,14 +6,14 @@ async function bootstrap() {
 
   // Enable CORS with strict settings for localhost
   app.enableCors({
-    origin: 'http://localhost:3000', // Your frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-    credentials: true, // Enable cookies/auth headers
-    preflightContinue: false, // Disable preflight caching
-    optionsSuccessStatus: 204, // Return 204 for OPTIONS requests
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
-  await app.listen(process.env.SERVER_PORT || 3000); // Backend on a different port (e.g., 3001)
+  await app.listen(process.env.SERVER_PORT || 3000);
 }
-bootstrap();
+void bootstrap();
