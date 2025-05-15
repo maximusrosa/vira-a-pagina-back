@@ -1,5 +1,4 @@
 import { Controller, Post, UseGuards, Request, Body, Get, HttpException, HttpCode } from '@nestjs/common';
-//import { AuthPayloadDTO } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from 'src/core/guards/local-auth.guard';
 import { CreateUserDto } from 'src/domain/user/dtos/create-user.dto';
@@ -9,14 +8,6 @@ import { HttpStatus } from '@nestjs/common';
 export class AuthController {
 
     constructor(private authService: AuthService) { }
-
-
-    // Versão Anterior:
-    /*
-    @Post('login')
-    login(@Body() authPayload: AuthPayloadDTO){
-        const token = this.authService.validateUser(authPayload);
-    */
 
     @UseGuards(LocalAuthGuard)
     @Post('/login')

@@ -23,8 +23,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsEnum(UserRole, { message: 'Invalid Role' })
-  role?: UserRole = UserRole.STUDENT;
-
+  role?: UserRole;
   // Atributos específicos
   @ValidateNested()
   @Type(() => CreateStudentDto)

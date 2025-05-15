@@ -70,8 +70,6 @@ model Student {
   booksOwned       Book[]     @relation("UserBooks")
   providedExchanges Exchange[] @relation("ProviderExchanges")
   requestedExchanges Exchange[] @relation("RequesterExchanges")
-  sentMessages     Message[]  @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model Book {
@@ -105,14 +103,4 @@ model Exchange {
   status           ExchangeStatus
   requestDate      DateTime  @default(now())
   completionDate   DateTime?
-}
-
-model Message {
-  id               Int       @id @default(autoincrement())
-  sender           Student   @relation("SentMessages", fields: [senderId], references: [id])
-  senderId         Int
-  receiver         Student   @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  receiverId       Int
-  content          String
-  timestamp        DateTime  @default(now())
 }
