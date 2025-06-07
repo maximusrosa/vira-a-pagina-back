@@ -1,0 +1,71 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { BookService, PaginatedBooks } from './book.service';
+import { CreateBookDto } from './dtos/create-book.dto';
+import { UpdateBookDto } from './dtos/update-book.dto';
+import { Book } from '@prisma/client';
+
+@Controller('books')
+export class BookController {
+  constructor(private readonly bookService: BookService) {}
+
+  /**
+   * POST /books
+   * Cria um novo Book com todos os campos obrigatórios do CreateBookDto.
+   */
+  @Post()
+  async create(@Body() createBookDto: CreateBookDto): Promise<Book> {
+    return this.bookService.create(createBookDto);
+  }
+
+  /**
+   * GET /books
+   * Retorna lista de TODOS os livros, incluindo owner, authorizer e exchanges.
+   */
+  @Get()
+  async findAll(
+    @Query('page', new ParseIntPipe({ errorHttpStatusCode: 400 })) page = 1,
+    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: 400 })) limit = 10,
+  ): Promise<PaginatedBooks> {
+    return this.bookService.findAllWithPagination(page, limit);
+  }
+
+  /**
+   * GET /books/:id
+   * Retorna um único livro por id (ParseIntPipe garante que id é número).
+   */
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Book> {
+    return this.bookService.findOne(id);
+  }
+
+  /**
+   * PATCH /books/:id
+   * Atualiza campos parciais de um Book existente.
+   */
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateBookDto: UpdateBookDto,
+  ): Promise<Book> {
+    return this.bookService.update(id, updateBookDto);
+  }
+
+  /**
+   * DELETE /books/:id
+   * Remove um Book por id.
+   */
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.bookService.remove(id);
+  }
+}
