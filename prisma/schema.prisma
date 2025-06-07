@@ -73,21 +73,20 @@ model Student {
 }
 
 model Book {
-  id               Int        @id @default(autoincrement())
+  id               Int         @id @default(autoincrement())
   title            String
   author           String
   year             Int
   discipline       String
   condition        BookCondition
   description      String?
-  //images           String[]   // URLs to images
   status           BookStatus
-  owner            Student    @relation("UserBooks", fields: [ownerId], references: [id])
+  owner            Student     @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
   exchanges        Exchange[]
-  authorizer       Moderator  @relation("AuthorizedBooks", fields: [authorizerId], references: [id])
-  authorizerId     Int
-  createdAt        DateTime   @default(now())
+  authorizer       Moderator?  @relation("AuthorizedBooks", fields: [authorizerId], references: [id])
+  authorizerId     Int?
+  createdAt        DateTime    @default(now())
 }
 
 model Exchange {
