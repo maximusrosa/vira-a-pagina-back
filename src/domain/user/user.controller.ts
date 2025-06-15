@@ -31,7 +31,6 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-
   @Patch(':id')
   update(
     @Param('id') id: string,

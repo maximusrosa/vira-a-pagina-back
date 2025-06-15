@@ -31,12 +31,16 @@ export class CreateBookDto {
   @Length(1, 100)
   discipline: string;
 
-  @IsEnum(BookCondition, { message: 'Condição inválida. Deve ser NEW, USED ou DAMAGED.' })
+  @IsEnum(BookCondition, {
+    message: 'Condição inválida. Deve ser NEW, USED ou DAMAGED.',
+  })
   condition: BookCondition;
 
   @IsOptional()
   @IsString()
-  @Length(0, 1000, { message: 'A descrição pode ter no máximo 1000 caracteres.' })
+  @Length(0, 1000, {
+    message: 'A descrição pode ter no máximo 1000 caracteres.',
+  })
   description?: string;
 
   @IsEnum(BookStatus, {

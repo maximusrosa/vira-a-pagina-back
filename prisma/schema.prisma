@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client-js"
   output = "../node_modules/.prisma/client"
+  engineType = "binary"
 }
 
 datasource db {
@@ -22,6 +23,7 @@ enum BookCondition {
 
 enum BookStatus {
   AVAILABLE
+  ON_HOLD
   TRADED
 }
 
@@ -32,10 +34,9 @@ enum ExchangeStatus {
   CANCELED
 }
 
-enum UserRole {
-  USER_MODERATOR
+enum ModeratorRole {
   MODERATOR
-  STUDENT
+  USER_MODERATOR
 }
 
 model User {
@@ -43,33 +44,21 @@ model User {
   name             String
   email            String     @unique
   password         String
-  role             UserRole   @default(STUDENT)
-  createdAt        DateTime   @default(now())
-  
-  // Relation for role-specific profile
-  studentInfo      Student?
-  moderatorInfo    Moderator?
-}
-
-model Moderator {
-  id               Int        @id @default(autoincrement())
-  user             User       @relation(fields: [userId], references: [id])
-  userId           Int        @unique
-  authorizedExchanges Exchange[] @relation("AuthorizedExchanges")
-  authorizedBooks   Book[]     @relation("AuthorizedBooks")
-}
-
-model Student {
-  id              Int      @id @default(autoincrement())
-  user            User     @relation(fields: [userId], references: [id])
-  userId          Int      @unique
-  uniCard         String  @unique
+  uniCard          String  @unique
   course           String
   contact          String
   rating           Float?   
   booksOwned       Book[]     @relation("UserBooks")
   providedExchanges Exchange[] @relation("ProviderExchanges")
   requestedExchanges Exchange[] @relation("RequesterExchanges")
+  createdAt        DateTime   @default(now())
+}
+
+model Moderator {
+  id               Int        @id @default(autoincrement())
+  email            String     @unique
+  password         String
+  role             ModeratorRole @default(MODERATOR)
 }
 
 model Book {
@@ -81,11 +70,9 @@ model Book {
   condition        BookCondition
   description      String?
   status           BookStatus
-  owner            Student     @relation("UserBooks", fields: [ownerId], references: [id])
+  owner            User     @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
   exchanges        Exchange[]
-  authorizer       Moderator?  @relation("AuthorizedBooks", fields: [authorizerId], references: [id])
-  authorizerId     Int?
   createdAt        DateTime    @default(now())
 }
 
@@ -93,12 +80,10 @@ model Exchange {
   id               Int       @id @default(autoincrement())
   book             Book      @relation(fields: [bookId], references: [id])
   bookId           Int
-  provider         Student   @relation("ProviderExchanges", fields: [providerId], references: [id])
+  provider         User   @relation("ProviderExchanges", fields: [providerId], references: [id])
   providerId       Int
-  requester        Student   @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  requester        User   @relation("RequesterExchanges", fields: [requesterId], references: [id])
   requesterId      Int
-  authorizer       Moderator @relation("AuthorizedExchanges", fields: [authorizerId], references: [id])
-  authorizerId     Int
   status           ExchangeStatus
   requestDate      DateTime  @default(now())
   completionDate   DateTime?

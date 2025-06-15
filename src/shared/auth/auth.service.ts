@@ -76,7 +76,9 @@ export class AuthService {
           name: signupDto.name,
           email: signupDto.email,
           password: hashedPassword,
-          role: signupDto.role,
+          uniCard: signupDto.uniCard,
+          course: string;
+          contact: string;
         });
     }
 }

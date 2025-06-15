@@ -18,12 +18,12 @@ async function main() {
       password: hashedPassword1,
       role: UserRole.MODERATOR,
       moderatorInfo: {
-        create: {} // Sem campos adicionais necessários
-      }
+        create: {}, // Sem campos adicionais necessários
+      },
     },
     include: {
-      moderatorInfo: true
-    }
+      moderatorInfo: true,
+    },
   });
 
   console.log('Moderador 1 criado:', moderator1);
@@ -36,12 +36,12 @@ async function main() {
       password: hashedPassword2,
       role: UserRole.USER_MODERATOR,
       moderatorInfo: {
-        create: {} // Sem campos adicionais necessários
-      }
+        create: {}, // Sem campos adicionais necessários
+      },
     },
     include: {
-      moderatorInfo: true
-    }
+      moderatorInfo: true,
+    },
   });
 
   console.log('Moderador de usuários criado:', userModerator);

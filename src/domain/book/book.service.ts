@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CreateBookDto } from './dtos/create-book.dto';
 import { UpdateBookDto } from './dtos/update-book.dto';
@@ -8,8 +12,8 @@ export interface PaginatedBooks {
   items: Book[];
   meta: {
     totalItems: number;
-    itemCount: number;      // número de itens retornados nesta página
-    itemsPerPage: number;   // same as "limit"
+    itemCount: number; // número de itens retornados nesta página
+    itemsPerPage: number; // same as "limit"
     totalPages: number;
     currentPage: number;
   };
@@ -31,9 +35,9 @@ export class BookService {
         author: createDto.author,
         year: createDto.year,
         discipline: createDto.discipline,
-        condition: createDto.condition,   // Enums já válidos pela validação
+        condition: createDto.condition, // Enums já válidos pela validação
         description: createDto.description,
-        status: createDto.status,         // Enum
+        status: createDto.status, // Enum
         owner: { connect: { id: createDto.ownerId } },
         authorizer: { connect: { id: createDto.authorizerId } },
         // Se você quiser incluir relações inversas (exchanges), faz depois
@@ -49,55 +53,55 @@ export class BookService {
   /**
    * Retorna todos os livros. Podemos incluir relações (owner, authorizer, exchanges).
    */
-    async findAllWithPagination(
-        page: number,
-        limit: number,
-    ): Promise<PaginatedBooks> {
-        // Garantir valores mínimos
-        if (page < 1) {
-            throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
-        }
-        if (limit < 1) {
-            throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
-        }
-        // (Opcional) limitar o máximo de "limit" para, por ex., 100 registros por vez
-        const MAX_LIMIT = 100;
-        if (limit > MAX_LIMIT) {
-            limit = MAX_LIMIT;
-        }
-
-        // 1) Contar o total de livros no banco (sem filtros)
-        const totalItems = await this.databaseService.book.count();
-
-        // 2) Calcular quantos itens pular
-        const skip = (page - 1) * limit;
-
-        // 3) Buscar somente os registros “slice” da página
-        const items: Book[] = await this.databaseService.book.findMany({
-            skip,
-            take: limit,
-            orderBy: { createdAt: 'desc' }, // Exemplo: ordenando do mais novo para o mais antigo
-            include: {
-                owner: true,
-                authorizer: true,
-                exchanges: true,
-            },
-        });
-
-        // 4) Calcular total de páginas (arredondando para cima)
-        const totalPages = Math.ceil(totalItems / limit);
-
-        return {
-            items,
-            meta: {
-                totalItems,
-                itemCount: items.length,
-                itemsPerPage: limit,
-                totalPages,
-                currentPage: page,
-            }
-        };
+  async findAllWithPagination(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedBooks> {
+    // Garantir valores mínimos
+    if (page < 1) {
+      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
     }
+    if (limit < 1) {
+      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+    }
+    // (Opcional) limitar o máximo de "limit" para, por ex., 100 registros por vez
+    const MAX_LIMIT = 100;
+    if (limit > MAX_LIMIT) {
+      limit = MAX_LIMIT;
+    }
+
+    // 1) Contar o total de livros no banco (sem filtros)
+    const totalItems = await this.databaseService.book.count();
+
+    // 2) Calcular quantos itens pular
+    const skip = (page - 1) * limit;
+
+    // 3) Buscar somente os registros “slice” da página
+    const items: Book[] = await this.databaseService.book.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' }, // Exemplo: ordenando do mais novo para o mais antigo
+      include: {
+        owner: true,
+        authorizer: true,
+        exchanges: true,
+      },
+    });
+
+    // 4) Calcular total de páginas (arredondando para cima)
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
+  }
 
   /**
    * Busca um livro específico por id. Se não existir, lança NotFoundException.
@@ -122,7 +126,9 @@ export class BookService {
    */
   async update(id: number, updateDto: UpdateBookDto): Promise<Book> {
     // Verifica existência antes de atualizar, para poder lançar NotFoundException
-    const exists = await this.databaseService.book.findUnique({ where: { id } });
+    const exists = await this.databaseService.book.findUnique({
+      where: { id },
+    });
     if (!exists) {
       throw new NotFoundException(`Livro com id ${id} não encontrado.`);
     }
