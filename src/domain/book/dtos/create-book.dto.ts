@@ -1,33 +1,33 @@
 import {
   IsString,
   IsNotEmpty,
+  IsOptional,
   Length,
   IsInt,
   Min,
-  Max,
   IsEnum,
-  IsOptional,
   IsPositive,
 } from 'class-validator';
 import { BookCondition, BookStatus } from '@prisma/client';
 
 export class CreateBookDto {
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty({ message: 'O título é obrigatório.' })
   @Length(1, 255)
   title: string;
 
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty({ message: 'O autor é obrigatório.' })
   @Length(1, 255)
   author: string;
 
+  @IsNotEmpty()
   @IsInt({ message: 'O ano deve ser um número inteiro.' })
   @Min(0, { message: 'O ano deve ser positivo ou zero.' })
   year: number;
 
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty({ message: 'A disciplina é obrigatória.' })
   @Length(1, 100)
   discipline: string;
 
@@ -43,11 +43,13 @@ export class CreateBookDto {
   })
   description?: string;
 
+  @IsOptional()
   @IsEnum(BookStatus, {
-    message: 'Status inválido. Deve ser AVAILABLE, REQUESTED ou EXCHANGED.',
+    message: 'Status inválido. Deve ser AVAILABLE, TRADED ou WAITING_APPROVAL.',
   })
-  status: BookStatus;
+  status?: BookStatus = BookStatus.WAITING_APPROVAL;
 
+  @IsNotEmpty()
   @IsInt({ message: 'ownerId deve ser um número inteiro.' })
   @IsPositive({ message: 'ownerId deve ser positivo.' })
   ownerId: number;

@@ -4,7 +4,6 @@ import {
   Length,
   IsInt,
   Min,
-  Max,
   IsEnum,
   IsPositive,
 } from 'class-validator';
@@ -33,7 +32,7 @@ export class UpdateBookDto {
 
   @IsOptional()
   @IsEnum(BookCondition, {
-    message: 'Condição inválida. Deve ser NEW, USED ou DAMAGED.',
+    message: 'Condição inválida. Deve ser LIKE_NEW, GOOD ou ACCEPTABLE.',
   })
   condition?: BookCondition;
 
@@ -44,7 +43,7 @@ export class UpdateBookDto {
 
   @IsOptional()
   @IsEnum(BookStatus, {
-    message: 'Status inválido. Deve ser AVAILABLE, REQUESTED ou EXCHANGED.',
+    message: 'Status inválido. Deve ser AVAILABLE, TRADED ou WAITING_APPROVAL.',
   })
   status?: BookStatus;
 
@@ -52,9 +51,4 @@ export class UpdateBookDto {
   @IsInt({ message: 'ownerId deve ser um número inteiro.' })
   @IsPositive({ message: 'ownerId deve ser positivo.' })
   ownerId?: number;
-
-  @IsOptional()
-  @IsInt({ message: 'authorizerId deve ser um número inteiro.' })
-  @IsPositive({ message: 'authorizerId deve ser positivo.' })
-  authorizerId?: number;
 }

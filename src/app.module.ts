@@ -6,6 +6,9 @@ import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './shared/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { BookModule } from './domain/book/book.module';
+import { ModeratorModule } from './domain/moderator/moderator.module';
+import { ExchangeModule } from './domain/exchange/exchange.module';
+import { EvaluationModule } from './domain/evaluation/evaluation.module';
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { BookModule } from './domain/book/book.module';
     UserModule,
     AuthModule,
     BookModule,
+    ModeratorModule,
+    ExchangeModule,
+    EvaluationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

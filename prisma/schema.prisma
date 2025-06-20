@@ -25,6 +25,7 @@ enum BookStatus {
   AVAILABLE
   ON_HOLD
   TRADED
+  WAITING_APPROVAL
 }
 
 enum ExchangeStatus {
@@ -40,51 +41,72 @@ enum ModeratorRole {
 }
 
 model User {
-  id               Int        @id @default(autoincrement())
+  id               Int          @id @default(autoincrement())
   name             String
-  email            String     @unique
+  email            String       @unique
   password         String
-  uniCard          String  @unique
+  uniCard          String       @unique
   course           String
   contact          String
-  rating           Float?   
-  booksOwned       Book[]     @relation("UserBooks")
-  providedExchanges Exchange[] @relation("ProviderExchanges")
+  rating           Float        @default(5.0)   
+  booksOwned       Book[]       @relation("UserBooks")
+  providedExchanges Exchange[]  @relation("ProviderExchanges")
   requestedExchanges Exchange[] @relation("RequesterExchanges")
-  createdAt        DateTime   @default(now())
+  ratingsGiven     Evaluation[] @relation("RatingGiver")
+  ratingsReceived  Evaluation[] @relation("RatingReceiver")
+  createdAt        DateTime     @default(now())
 }
 
 model Moderator {
-  id               Int        @id @default(autoincrement())
-  email            String     @unique
+  id               Int           @id @default(autoincrement())
+  email            String        @unique
   password         String
   role             ModeratorRole @default(MODERATOR)
 }
 
 model Book {
-  id               Int         @id @default(autoincrement())
+  id               Int          @id @default(autoincrement())
   title            String
   author           String
   year             Int
   discipline       String
   condition        BookCondition
   description      String?
-  status           BookStatus
-  owner            User     @relation("UserBooks", fields: [ownerId], references: [id])
+  status           BookStatus    @default(WAITING_APPROVAL)
+  owner            User          @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
-  exchanges        Exchange[]
-  createdAt        DateTime    @default(now())
+
+  requesterExchanges Exchange[]  @relation("RequesterBookExchange")
+  providerExchanges Exchange[]   @relation("ProviderBookExchange")
+  
+  createdAt        DateTime      @default(now())
 }
 
 model Exchange {
-  id               Int       @id @default(autoincrement())
-  book             Book      @relation(fields: [bookId], references: [id])
-  bookId           Int
-  provider         User   @relation("ProviderExchanges", fields: [providerId], references: [id])
-  providerId       Int
-  requester        User   @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  id               Int            @id @default(autoincrement())
+
+  requesterBook    Book           @relation("RequesterBookExchange", fields: [requesterBookId], references: [id])
+  requesterBookId  Int
+  requester        User           @relation("RequesterExchanges", fields: [requesterId], references: [id])
   requesterId      Int
-  status           ExchangeStatus
-  requestDate      DateTime  @default(now())
+
+  providerBook     Book           @relation("ProviderBookExchange", fields: [providerBookId], references: [id])
+  providerBookId   Int
+  provider         User           @relation("ProviderExchanges", fields: [providerId], references: [id])
+  providerId       Int
+
+  status           ExchangeStatus @default(REQUESTED)
+  requestDate      DateTime       @default(now())
   completionDate   DateTime?
+}
+
+model Evaluation {
+  id               Int      @id @default(autoincrement())
+  rater            User     @relation("RatingGiver", fields: [raterId], references: [id])
+  raterId          Int
+  rated            User     @relation("RatingReceiver", fields: [ratedId], references: [id])
+  ratedId          Int
+  rating           Float    @default(5.0) 
+
+  @@unique([raterId, ratedId])
 }
