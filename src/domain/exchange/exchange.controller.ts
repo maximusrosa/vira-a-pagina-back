@@ -7,11 +7,12 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ExchangeService } from './exchange.service';
 import { CreateExchangeDto } from './dtos/create-exchange.dto';
 import { UpdateExchangeDto } from './dtos/update-exchange.dto';
-import { Exchange } from '@prisma/client';
+import { Exchange, ExchangeStatus } from '@prisma/client';
 
 @Controller('exchanges')
 export class ExchangeController {
@@ -25,6 +26,31 @@ export class ExchangeController {
   @Get()
   async findAll(): Promise<Exchange[]> {
     return this.exchangeService.findAll();
+  }
+
+  @Get('requester/:userId')
+  async findByRequester(@Param('userId', ParseIntPipe) userId: number): Promise<Exchange[]> {
+    return this.exchangeService.findByRequester(userId);
+  }
+
+  @Get('provider/:userId')
+  async findByProvider(@Param('userId', ParseIntPipe) userId: number): Promise<Exchange[]> {
+    return this.exchangeService.findByProvider(userId);
+  }
+
+  @Get('user/:userId')
+  async findByUser(@Param('userId', ParseIntPipe) userId: number): Promise<Exchange[]> {
+    return this.exchangeService.findByUser(userId);
+  }
+
+  @Get('status/:status')
+  async findByStatus(@Param('status') status: ExchangeStatus): Promise<Exchange[]> {
+    return this.exchangeService.findByStatus(status);
+  }
+
+  @Get('waiting-approval')
+  async findWaitingForApproval(): Promise<Exchange[]> {
+    return this.exchangeService.findWaitingForApproval();
   }
 
   @Get(':id')

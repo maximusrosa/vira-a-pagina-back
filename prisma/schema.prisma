@@ -23,7 +23,7 @@ enum BookCondition {
 
 enum BookStatus {
   AVAILABLE
-  ON_HOLD
+  ON_HOLD // Não sei se vamos manter
   TRADED
   WAITING_APPROVAL
 }
