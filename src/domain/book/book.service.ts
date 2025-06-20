@@ -27,98 +27,93 @@ export class BookService {
    * Cria um novo Book. O Prisma já gera createdAt automaticamente.
    */
   async create(createDto: CreateBookDto): Promise<Book> {
-    // Prisma trata automaticamente createdAt e updatedAt
-    // Basta passar todos os campos necessários
     return this.databaseService.book.create({
       data: {
         title: createDto.title,
         author: createDto.author,
         year: createDto.year,
         discipline: createDto.discipline,
-        condition: createDto.condition, // Enums já válidos pela validação
+        condition: createDto.condition,
         description: createDto.description,
-        status: createDto.status, // Enum
+        status: createDto.status || BookStatus.WAITING_APPROVAL,
         owner: { connect: { id: createDto.ownerId } },
-        authorizer: { connect: { id: createDto.authorizerId } },
-        // Se você quiser incluir relações inversas (exchanges), faz depois
       },
       include: {
         owner: true,
-        authorizer: true,
-        exchanges: true,
+        requesterExchanges: true,
+        providerExchanges: true,
       },
     });
   }
 
-  /**
-   * Retorna todos os livros. Podemos incluir relações (owner, authorizer, exchanges).
-   */
-  async findAllWithPagination(
-    page: number,
-    limit: number,
-  ): Promise<PaginatedBooks> {
-    // Garantir valores mínimos
-    if (page < 1) {
-      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
-    }
-    if (limit < 1) {
-      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
-    }
-    // (Opcional) limitar o máximo de "limit" para, por ex., 100 registros por vez
-    const MAX_LIMIT = 100;
-    if (limit > MAX_LIMIT) {
-      limit = MAX_LIMIT;
-    }
-
-    // 1) Contar o total de livros no banco (sem filtros)
-    const totalItems = await this.databaseService.book.count();
-
-    // 2) Calcular quantos itens pular
-    const skip = (page - 1) * limit;
-
-    // 3) Buscar somente os registros “slice” da página
-    const items: Book[] = await this.databaseService.book.findMany({
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' }, // Exemplo: ordenando do mais novo para o mais antigo
-      include: {
-        owner: true,
-        authorizer: true,
-        exchanges: true,
-      },
-    });
-
-    // 4) Calcular total de páginas (arredondando para cima)
-    const totalPages = Math.ceil(totalItems / limit);
-
-    return {
-      items,
-      meta: {
-        totalItems,
-        itemCount: items.length,
-        itemsPerPage: limit,
-        totalPages,
-        currentPage: page,
-      },
-    };
-  }
-
-  /**
-   * Busca um livro específico por id. Se não existir, lança NotFoundException.
-   */
   async findOne(id: number): Promise<Book> {
     const book = await this.databaseService.book.findUnique({
       where: { id },
       include: {
         owner: true,
-        authorizer: true,
-        exchanges: true,
+        requesterExchanges: true,
+        providerExchanges: true,
       },
     });
+
     if (!book) {
       throw new NotFoundException(`Livro com id ${id} não encontrado.`);
     }
+    
     return book;
+  }
+  
+  /**
+   * Retorna todos os livros. Podemos incluir relações (owner, authorizer, exchanges).
+   */
+    async findAllWithPagination(
+        page: number,
+        limit: number,
+    ): Promise<PaginatedBooks> {
+        // Garantir valores mínimos
+        if (page < 1) {
+            throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
+        }
+        if (limit < 1) {
+            throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+        }
+        // (Opcional) limitar o máximo de "limit" para, por ex., 100 registros por vez
+        const MAX_LIMIT = 100;
+        if (limit > MAX_LIMIT) {
+            limit = MAX_LIMIT;
+        }
+
+        // 1) Contar o total de livros no banco (sem filtros)
+        const totalItems = await this.databaseService.book.count();
+
+        // 2) Calcular quantos itens pular
+        const skip = (page - 1) * limit;
+
+        // 3) Buscar somente os registros “slice” da página
+        const items: Book[] = await this.databaseService.book.findMany({
+            skip,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                owner: true,
+                requesterExchanges: true,
+                providerExchanges: true,
+            },
+        });
+
+        // 4) Calcular total de páginas (arredondando para cima)
+        const totalPages = Math.ceil(totalItems / limit);
+
+      return {
+          items,
+          meta: {
+              totalItems,
+              itemCount: items.length,
+              itemsPerPage: limit,
+              totalPages,
+              currentPage: page,
+          }
+      };
   }
 
   /**
@@ -143,7 +138,6 @@ export class BookService {
       description?: string | null;
       status?: BookStatus;
       owner?: { connect: { id: number } };
-      authorizer?: { connect: { id: number } };
     } = {};
 
     if (updateDto.title !== undefined) {
@@ -171,17 +165,14 @@ export class BookService {
     if (updateDto.ownerId !== undefined) {
       data.owner = { connect: { id: updateDto.ownerId } };
     }
-    if (updateDto.authorizerId !== undefined) {
-      data.authorizer = { connect: { id: updateDto.authorizerId } };
-    }
 
     return this.databaseService.book.update({
       where: { id },
       data,
       include: {
         owner: true,
-        authorizer: true,
-        exchanges: true,
+        requesterExchanges: true,
+        providerExchanges: true,
       },
     });
   }

@@ -133,7 +133,10 @@ describe('BookService (pagination)', () => {
       prisma.book.findMany.mockResolvedValue(fakeBooksPage2);
 
       // Act
-      const result: PaginatedBooks = await service.findAllWithPagination(2, 10);
+      const result: PaginatedBooks = await service.findAllWithPagination(
+        2,
+        10,
+      );
 
       // Assert
       expect(prisma.book.count).toHaveBeenCalledTimes(1);
@@ -157,7 +160,10 @@ describe('BookService (pagination)', () => {
       prisma.book.findMany.mockResolvedValue([]); // Excess page yields empty array
 
       // Act
-      const result: PaginatedBooks = await service.findAllWithPagination(3, 10);
+      const result: PaginatedBooks = await service.findAllWithPagination(
+        3,
+        10,
+      );
 
       // Assert
       expect(prisma.book.count).toHaveBeenCalledTimes(1);
