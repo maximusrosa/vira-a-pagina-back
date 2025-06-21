@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from 'src/domain/user/dtos/create-user.dto';
 import { UserService } from 'src/domain/user/user.service';
+import { ModeratorService } from 'src/domain/moderator/moderator.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { JwtService} from '@nestjs/jwt';
 import { HttpException, HttpStatus } from '@nestjs/common'; 
@@ -10,20 +11,34 @@ export class AuthService {
 
     constructor(
         private userService: UserService,
+        private moderatorService: ModeratorService,
         private encryptionService: EncryptionService,
         private jwtService: JwtService,
     ) {}
 
-    async validateUser(email: string, password: string): Promise<any> {
-        const user = await this.userService.findByEmail(email)
-        if (user == null) return null;
-        
-        if (this.encryptionService.comparePassword(user.password, password)){
-            const { password, ...result } = user;
-            return result;
+    async validateLogin(email: string, password: string, isMod: boolean = false): Promise<any> {
+        if (isMod){
+            const moderator = await this.moderatorService.findByEmail(email);
+            if (moderator == null) return null;
+
+            if (this.encryptionService.comparePassword(moderator.password, password)){
+                const { password, ...result } = moderator;
+                return result;
+            }
+            else
+                return null;
         }
-        else
-            return null;
+        else {
+            const user = await this.userService.findByEmail(email);
+            if (user == null) return null;
+
+            if (this.encryptionService.comparePassword(user.password, password)){
+                const { password, ...result } = user;
+                return result;
+            }
+            else
+                return null;
+        }
     }
 
     async login(user: any) {
