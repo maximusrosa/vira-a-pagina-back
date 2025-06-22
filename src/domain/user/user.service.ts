@@ -17,7 +17,19 @@ export class UserService {
       }
     });
   }
-  async findAll() {
+
+  async findAll(activeOnly: boolean) {
+    if (activeOnly) {
+      return this.databaseService.user.findMany({
+        where: { status: 'ACTIVE' },
+        include: {
+          booksOwned: true,
+          ratingsReceived: true,
+          matchesAsUser1: true,
+          matchesAsUser2: true,
+        }
+      });
+    }
     return this.databaseService.user.findMany({
       include: {
         booksOwned: true,
@@ -27,7 +39,20 @@ export class UserService {
       }
     });
   }
-  async findOne(id: number) {
+
+  async findOne(id: number, activeOnly: boolean) {
+    if (activeOnly) {
+      return this.databaseService.user.findFirst({
+        where: { id, status: 'ACTIVE' },
+        include: {
+          booksOwned: true,
+          ratingsGiven: true,
+          ratingsReceived: true,
+          matchesAsUser1: true,
+          matchesAsUser2: true
+        }
+      });
+    }
     return this.databaseService.user.findUnique({
       where: { id },
       include: {
@@ -35,12 +60,28 @@ export class UserService {
         ratingsGiven: true,
         ratingsReceived: true,
         matchesAsUser1: true,
-        matchesAsUser2: true,
+        matchesAsUser2: true
       }
     });
   }
 
-  async findFirst5() {
+  async findFirst5(activeOnly: boolean) {
+    if (activeOnly) {
+      return this.databaseService.user.findMany({
+        where: { status: 'ACTIVE' },
+        take: 5,
+        orderBy: { id: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          uniCard: true,
+          course: true,
+          rating: true,
+          status: true
+        },
+      });
+    }
     return this.databaseService.user.findMany({
       take: 5,
       orderBy: { id: 'asc' },
@@ -51,11 +92,28 @@ export class UserService {
         uniCard: true,
         course: true,
         rating: true,
+        status: true
       },
     });
   }
 
-  async findByEmail(email: string): Promise<any | undefined> {
+  async findByEmail(email: string, activeOnly: boolean): Promise<any | undefined> {
+    if (activeOnly) {
+      return await this.databaseService.user.findFirst({
+        where: { email, status: 'ACTIVE' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          password: true,
+          uniCard: true,
+          course: true,
+          contact: true,
+          rating: true,
+          status: true
+        },
+      });
+    }
     return await this.databaseService.user.findUnique({
       where: { email },
       select: {
@@ -67,15 +125,21 @@ export class UserService {
         course: true,
         contact: true,
         rating: true,
+        status: true
       },
     });
   }
-
-  async findByUniCard(uniCard: string): Promise<any | undefined> {
+  async findByUniCard(uniCard: string, activeOnly: boolean): Promise<any | undefined> {
+    if (activeOnly) {
+      return await this.databaseService.user.findFirst({
+        where: { uniCard, status: 'ACTIVE' }
+      });
+    }
     return await this.databaseService.user.findUnique({
       where: { uniCard },
     });
   }
+
   async update(id: number, updateUserDto: Prisma.UserUpdateInput) {
     return this.databaseService.user.update({
       where: { id },

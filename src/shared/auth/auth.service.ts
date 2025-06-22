@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from 'src/domain/user/dtos/create-user.dto';
 import { UserService } from 'src/domain/user/user.service';
 import { ModeratorService } from 'src/domain/moderator/moderator.service';
+import { UserStatus } from '@prisma/client';
 import { EncryptionService } from '../encryption/encryption.service';
 import { JwtService} from '@nestjs/jwt';
 import { HttpException, HttpStatus } from '@nestjs/common'; 
@@ -29,7 +30,7 @@ export class AuthService {
                 return null;
         }
         else {
-            const user = await this.userService.findByEmail(email);
+            const user = await this.userService.findByEmail(email, true);
             if (user == null) return null;
 
             if (this.encryptionService.comparePassword(user.password, password)){
@@ -69,12 +70,16 @@ export class AuthService {
         if (signupDto.password !== signupDto.confirmPassword)
             throw new HttpException('Há diferença entre as senhas.', HttpStatus.BAD_REQUEST);
         
-        const existingUser = await this.userService.findByEmail(signupDto.email);
+        const existingUser = await this.userService.findByEmail(signupDto.email, false);
         if (existingUser) {
-            throw new HttpException('Este e-mail já foi cadastrado', HttpStatus.CONFLICT);
+            if (existingUser.status == 'WAITING_APROVAL') {
+                throw new HttpException('Esta conta está aguardando aprovação', HttpStatus.CONFLICT);
+            } else {
+                throw new HttpException('Este e-mail já foi cadastrado', HttpStatus.CONFLICT);
+            }
         }
 
-        const existingUniCard = await this.userService.findByUniCard(signupDto.uniCard);
+        const existingUniCard = await this.userService.findByUniCard(signupDto.uniCard, false);
         if (existingUniCard) {
             throw new HttpException('Este cartão universitário já foi cadastrado', HttpStatus.CONFLICT);
         }
@@ -89,6 +94,7 @@ export class AuthService {
           course: signupDto.course,
           contact: signupDto.contact,
           rating: 5.0, // Default rating from schema
+          status: UserStatus.WAITING_APPROVAL
         });
     }
 }

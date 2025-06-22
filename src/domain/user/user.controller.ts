@@ -23,24 +23,28 @@ export class UserController {
 
   @Get()
   findAll() {
-    return this.userService.findAll();
+    return this.userService.findAll(true);
   }
 
   @Get('email/:email')
   findByEmail(@Param('email') email: string) {
-    return this.userService.findByEmail(email);
+    return this.userService.findByEmail(email, true);
+  }
+
+  @Get('mod/email/:email')
+  findByEmailMod(@Param('email') email: string) {
+    return this.userService.findByEmail(email, false);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(+id, true);
   }
 
   @Get('first5')
   findFirst5() {
-    return this.userService.findFirst5();
+    return this.userService.findFirst5(true);
   }
-
 
   @Patch(':id')
   update(

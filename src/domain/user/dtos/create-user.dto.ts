@@ -1,4 +1,6 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import { UserStatus } from '@prisma/client';
+import { User } from '../entities/user.entity';
 
 
 export class CreateUserDto {
@@ -30,10 +32,4 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   contact: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(5)
-  rating?: number;
 }
