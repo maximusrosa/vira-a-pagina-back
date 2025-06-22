@@ -23,6 +23,7 @@ async function createUser(data: {
 
 // Função para criar um moderador
 async function createModerator(data: {
+  name: string;
   email: string;
   password: string;
   role: ModeratorRole;
@@ -106,6 +107,7 @@ async function main() {
 
   // Criar moderadores
   const moderator1 = await createModerator({
+    name: 'Maria',
     email: 'maria.mod@example.com',
     password: hashedPassword1,
     role: ModeratorRole.MODERATOR
@@ -113,6 +115,7 @@ async function main() {
   console.log('Moderador criado:', moderator1.email);
 
   const userModerator = await createModerator({
+    name: 'Carlos',
     email: 'carlos.admin@example.com',
     password: hashedPassword2,
     role: ModeratorRole.USER_MODERATOR

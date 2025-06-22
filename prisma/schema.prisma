@@ -70,6 +70,7 @@ model User {
 
 model Moderator {
   id               Int           @id @default(autoincrement())
+  name             String
   email            String        @unique
   password         String
   role             ModeratorRole @default(MODERATOR)
@@ -124,17 +125,21 @@ model Evaluation {
 
 model Match {
   id               Int      @id @default(autoincrement())
+  
   user1            User     @relation("User1Matches", fields: [user1Id], references: [id])
   user1Id          Int
+  
   user2            User     @relation("User2Matches", fields: [user2Id], references: [id])
   user2Id          Int
   
   // Livros do user1 que interessam ao user2
   booksUser1       Book[]   @relation("User1BooksInMatch")
+  
   // Livros do user2 que interessam ao user1
   booksUser2       Book[]   @relation("User2BooksInMatch")
   
   exchanges        Exchange[] @relation("MatchExchanges")
+
   createdAt        DateTime @default(now())
 
   @@unique([user1Id, user2Id])

@@ -54,8 +54,6 @@ export class AuthService {
             id: user.id,
             name: user.name,
             email: user.email,
-            uniCard: user.uniCard,
-            course: user.course,
             token: this.jwtService.sign(payload),
         };
     }
