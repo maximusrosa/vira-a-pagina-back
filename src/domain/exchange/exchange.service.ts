@@ -167,6 +167,6 @@ export class ExchangeService {
   }
 
   async findWaitingForApproval(): Promise<Exchange[]> {
-    return this.findByStatus(ExchangeStatus.REQUESTED);
+    return this.findByStatus(ExchangeStatus.WAITING_APPROVAL);
   }
 }

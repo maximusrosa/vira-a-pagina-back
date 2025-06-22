@@ -22,15 +22,16 @@ enum BookCondition {
 }
 
 enum BookStatus {
+  WAITING_PUBLICATION_APPROVAL
   AVAILABLE
-  ON_HOLD // Não sei se vamos manter
+  WAITING_EXCHANGE_APPROVAL
   TRADED
-  WAITING_APPROVAL
 }
 
 enum ExchangeStatus {
   REQUESTED
   ACCEPTED
+  WAITING_APPROVAL
   COMPLETED
   CANCELED
 }
@@ -50,11 +51,14 @@ model User {
   contact          String
   rating           Float        @default(5.0)   
   booksOwned       Book[]       @relation("UserBooks")
-  providedExchanges Exchange[]  @relation("ProviderExchanges")
-  requestedExchanges Exchange[] @relation("RequesterExchanges")
   ratingsGiven     Evaluation[] @relation("RatingGiver")
   ratingsReceived  Evaluation[] @relation("RatingReceiver")
   createdAt        DateTime     @default(now())
+  booksLiked       Book[]       @relation("LikedBooks")
+  
+  // Relações para matches
+  matchesAsUser1   Match[]      @relation("User1Matches")
+  matchesAsUser2   Match[]      @relation("User2Matches")
 }
 
 model Moderator {
@@ -72,28 +76,28 @@ model Book {
   discipline       String
   condition        BookCondition
   description      String?
-  status           BookStatus    @default(WAITING_APPROVAL)
+  status           BookStatus    @default(WAITING_PUBLICATION_APPROVAL)
   owner            User          @relation("UserBooks", fields: [ownerId], references: [id])
   ownerId          Int
+  likedBy          User[]        @relation("LikedBooks")
 
   requesterExchanges Exchange[]  @relation("RequesterBookExchange")
   providerExchanges Exchange[]   @relation("ProviderBookExchange")
+  
+  // Relações para matches
+  matchesAsUser1Book Match[]     @relation("User1BooksInMatch")
+  matchesAsUser2Book Match[]     @relation("User2BooksInMatch")
   
   createdAt        DateTime      @default(now())
 }
 
 model Exchange {
-  id               Int            @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
+  match            Match    @relation("MatchExchanges", fields: [matchId], references: [id])
+  matchId          Int
 
-  requesterBook    Book           @relation("RequesterBookExchange", fields: [requesterBookId], references: [id])
-  requesterBookId  Int
-  requester        User           @relation("RequesterExchanges", fields: [requesterId], references: [id])
-  requesterId      Int
-
-  providerBook     Book           @relation("ProviderBookExchange", fields: [providerBookId], references: [id])
-  providerBookId   Int
-  provider         User           @relation("ProviderExchanges", fields: [providerId], references: [id])
-  providerId       Int
+  requesterBooks   Book[]   @relation("RequesterBookExchange")
+  providerBooks    Book[]   @relation("ProviderBookExchange")
 
   status           ExchangeStatus @default(REQUESTED)
   requestDate      DateTime       @default(now())
@@ -109,4 +113,26 @@ model Evaluation {
   rating           Float    @default(5.0) 
 
   @@unique([raterId, ratedId])
+}
+
+model Match {
+  id               Int      @id @default(autoincrement())
+  
+  user1            User     @relation("User1Matches", fields: [user1Id], references: [id])
+  user1Id          Int
+  
+  user2            User     @relation("User2Matches", fields: [user2Id], references: [id])
+  user2Id          Int
+  
+  // Livros do user1 que interessam ao user2
+  booksUser1       Book[]   @relation("User1BooksInMatch")
+  
+  // Livros do user2 que interessam ao user1
+  booksUser2       Book[]   @relation("User2BooksInMatch")
+  
+  exchanges       Exchange[] @relation("MatchExchanges")
+
+  createdAt        DateTime @default(now())
+
+  @@unique([user1Id, user2Id])
 }
