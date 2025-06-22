@@ -35,7 +35,7 @@ export class BookService {
         discipline: createDto.discipline,
         condition: createDto.condition,
         description: createDto.description,
-        status: createDto.status || BookStatus.WAITING_APPROVAL,
+        status: createDto.status || BookStatus.WAITING_PUBLICATION_APPROVAL,
         owner: { connect: { id: createDto.ownerId } },
       },
       include: {

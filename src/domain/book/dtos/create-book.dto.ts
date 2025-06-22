@@ -45,9 +45,9 @@ export class CreateBookDto {
 
   @IsOptional()
   @IsEnum(BookStatus, {
-    message: 'Status inválido. Deve ser AVAILABLE, TRADED ou WAITING_APPROVAL.',
+    message: 'Status inválido. Deve ser AVAILABLE, TRADED, ou WAITING_PUBLICATION_APPROVAL',
   })
-  status?: BookStatus = BookStatus.WAITING_APPROVAL;
+  status?: BookStatus = BookStatus.WAITING_PUBLICATION_APPROVAL;
 
   @IsNotEmpty()
   @IsInt({ message: 'ownerId deve ser um número inteiro.' })

@@ -31,6 +31,7 @@ enum BookStatus {
 enum ExchangeStatus {
   REQUESTED
   ACCEPTED
+  REFUSED
   WAITING_APPROVAL
   COMPLETED
   CANCELED
@@ -130,7 +131,7 @@ model Match {
   // Livros do user2 que interessam ao user1
   booksUser2       Book[]   @relation("User2BooksInMatch")
   
-  exchanges       Exchange[] @relation("MatchExchanges")
+  exchanges        Exchange[] @relation("MatchExchanges")
 
   createdAt        DateTime @default(now())
 

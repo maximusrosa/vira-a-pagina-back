@@ -12,28 +12,17 @@ export class CreateExchangeDto {
   @IsNotEmpty()
   @IsInt()
   @IsPositive()
-  requesterBookId: number;
+  matchId: number;
 
   @IsNotEmpty()
-  @IsInt()
-  @IsPositive()
-  requesterId: number;
+  @IsInt({ each: true })
+  @IsPositive({ each: true })
+  requesterBooksIds: number[];
 
   @IsNotEmpty()
-  @IsInt()
-  @IsPositive()
-  providerBookId: number;
-
-  @IsNotEmpty()
-  @IsInt()
-  @IsPositive()
-  providerId: number;
-
-  @IsOptional()
-  @IsEnum(ExchangeStatus, {
-    message: 'Status inválido. Deve ser REQUESTED, ACCEPTED, COMPLETED ou CANCELED.',
-  })
-  status?: ExchangeStatus = ExchangeStatus.REQUESTED;
+  @IsInt({ each: true })
+  @IsPositive({ each: true })
+  providerBooksIds: number[];
 
   @IsOptional()
   @IsDateString()
