@@ -27,4 +27,12 @@ export class CreateExchangeDto {
   @IsOptional()
   @IsDateString()
   completionDate?: string;
+
+  @IsOptional()
+  @IsEnum(ExchangeStatus, {
+    message: 'Status inválido. Deve ser REQUESTED, ACCEPTED, REFUSED, WAITING_APPROVAL, COMPLETED, ou CANCELED',
+  })
+
+  status?: ExchangeStatus;
+
 }

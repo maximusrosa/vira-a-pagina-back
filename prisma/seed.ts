@@ -150,7 +150,14 @@ async function main() {
     contact: '11777777777'
   });
 
-  console.log('Usuários criados:', user1.name, user2.name, user3.name);
+  const user4 = await createUser({
+    name: 'Ana Oliveira',
+    email: 'ana@ufrgs.br',
+    password: hashedPassword1,
+    uniCard: 'UNI004',
+    course: 'Engenharia de Computação',
+    contact: '11666666666'
+  });
 
   // Criar livros
   const book1 = await createBook({
@@ -189,7 +196,7 @@ async function main() {
     year: 2008,
     discipline: 'Programação',
     condition: BookCondition.GOOD,
-    ownerId: user1.id,
+    ownerId: user4.id,
     description: 'As boas práticas do JavaScript'
   });
 
@@ -233,20 +240,59 @@ async function main() {
 
   console.log('Exchanges criados:', exchange1.id, exchange2.id);
 
-  // Criar avaliações
-  const evaluation1 = await createEvaluation({
-    raterId: user1.id,
-    ratedId: user2.id,
-    rating: 4.5
+  // Criar mais alguns livros para testes variados
+  const book5 = await createBook({
+    title: 'Refactoring',
+    author: 'Martin Fowler',
+    year: 2019,
+    discipline: 'Engenharia de Software',
+    condition: BookCondition.LIKE_NEW,
+    ownerId: user1.id,
+    description: 'Melhorando o design do código existente'
   });
 
-  const evaluation2 = await createEvaluation({
-    raterId: user2.id,
-    ratedId: user3.id,
-    rating: 5.0
+  const book6 = await createBook({
+    title: 'Database Systems',
+    author: 'Ramez Elmasri',
+    year: 2015,
+    discipline: 'Banco de Dados',
+    condition: BookCondition.GOOD,
+    ownerId: user2.id,
+    description: 'Fundamentos de sistemas de banco de dados'
   });
 
-  console.log('Avaliações criadas:', evaluation1.id, evaluation2.id);
+  console.log('Livros adicionais criados:', book5.title, book6.title);
+
+  // Atualizar status dos novos livros
+  await prisma.book.updateMany({
+    where: { id: { in: [book5.id, book6.id] } },
+    data: { status: BookStatus.AVAILABLE }
+  });
+
+  // Criar match adicional para testes
+  const match3 = await createMatch({
+    user1Id: user1.id,
+    user2Id: user3.id,
+    booksUser1Ids: [book4.id, book5.id], // João oferece JS e Refactoring
+    booksUser2Ids: [book3.id]             // Pedro oferece Algoritmos
+  });
+
+  console.log('Match adicional criado:', match3.id);
+
+  // Criar dados de exemplo para testes no Postman
+  console.log('\n=== DADOS PARA TESTES NO POSTMAN ===');
+  console.log('Matches disponíveis:');
+  console.log(`- Match ID: ${match1.id} (User ${user1.id} <-> User ${user2.id})`);
+  console.log(`- Match ID: ${match2.id} (User ${user2.id} <-> User ${user3.id})`);
+  console.log(`- Match ID: ${match3.id} (User ${user1.id} <-> User ${user3.id})`);
+  
+  console.log('\nLivros disponíveis:');
+  console.log(`- Book ID: ${book1.id} - ${book1.title} (Owner: ${user1.id})`);
+  console.log(`- Book ID: ${book2.id} - ${book2.title} (Owner: ${user2.id})`);
+  console.log(`- Book ID: ${book3.id} - ${book3.title} (Owner: ${user3.id})`);
+  console.log(`- Book ID: ${book4.id} - ${book4.title} (Owner: ${user1.id})`);
+  console.log(`- Book ID: ${book5.id} - ${book5.title} (Owner: ${user1.id})`);
+  console.log(`- Book ID: ${book6.id} - ${book6.title} (Owner: ${user2.id})`);
 
   console.log('Seed concluído com sucesso!');
 }

@@ -52,6 +52,24 @@ export class MatchService {
     return match;
   }
 
+  async findByUser(userId: number) {
+    return this.databaseService.match.findMany({
+      where: {
+        OR: [
+          { user1Id: userId },
+          { user2Id: userId },
+        ],
+      },
+      include: {
+        user1: true,
+        user2: true,
+        booksUser1: true,
+        booksUser2: true,
+        exchanges: true,
+      },
+    });
+  }
+
   async update(id: number, updateMatchDto: UpdateMatchDto) {
     const exists = await this.databaseService.match.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException(`Match com id ${id} não encontrado.`);

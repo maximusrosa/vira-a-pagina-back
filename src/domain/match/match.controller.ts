@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { CreateMatchDto } from './dtos/create-match.dto';
 import { UpdateMatchDto } from './dtos/update-match.dto';
 
-@Controller('match')
+@Controller('matches')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
@@ -15,6 +15,11 @@ export class MatchController {
   @Get()
   findAll() {
     return this.matchService.findAll();
+  }
+
+  @Get('user/:userId')
+  findByUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.matchService.findByUser(userId);
   }
 
   @Get(':id')
