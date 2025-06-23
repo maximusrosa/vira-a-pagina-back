@@ -10,7 +10,7 @@ import {
   Query,
   ForbiddenException,
 } from '@nestjs/common';
-import { ExchangeService } from './exchange.service';
+import { ExchangeService, PaginatedExchanges } from './exchange.service';
 import { MatchService } from '../match/match.service';
 import { CreateExchangeDto } from './dtos/create-exchange.dto';
 import { UpdateExchangeDto } from './dtos/update-exchange.dto';
@@ -44,8 +44,14 @@ export class ExchangeController {
   }
 
   @Get('user/:userId')
-  async findByUser(@Param('userId', ParseIntPipe) userId: number): Promise<Exchange[]> {
-    return this.exchangeService.findByUser(userId);
+  async findByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaginatedExchanges> {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    return this.exchangeService.findByUser(userId, pageNumber, limitNumber);
   }
 
   @Get('status/:status')

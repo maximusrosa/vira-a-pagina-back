@@ -16,7 +16,7 @@ import { ExchangeService } from '../exchange/exchange.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
 import { Prisma } from '@prisma/client';
 
-@Controller('moderator')
+@Controller('moderators')
 export class ModeratorController {
   constructor(
     private readonly moderatorService: ModeratorService,

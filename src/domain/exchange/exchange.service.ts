@@ -4,6 +4,17 @@ import { CreateExchangeDto } from './dtos/create-exchange.dto';
 import { UpdateExchangeDto } from './dtos/update-exchange.dto';
 import { Exchange, ExchangeStatus, BookStatus } from '@prisma/client';
 
+export interface PaginatedExchanges {
+  items: Exchange[];
+  meta: {
+    totalItems: number;
+    itemCount: number; 
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
 @Injectable()
 export class ExchangeService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -133,19 +144,61 @@ export class ExchangeService {
     });
   }
 
-  async findByUser(userId: number): Promise<Exchange[]> {
-    return this.databaseService.exchange.findMany({
-      where: {
-        OR: [
-          { requesterBooks: { some: { ownerId: userId } } },
-          { providerBooks: { some: { ownerId: userId } } },
-        ],
-      },
+  async findByUser(userId: number, page: number = 1, limit: number = 10): Promise<PaginatedExchanges> {
+    // Validate pagination parameters
+    if (page < 1) {
+      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
+    }
+    if (limit < 1) {
+      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+    }
+    
+    // Optional: limit the maximum number of items per page
+    const MAX_LIMIT = 100;
+    if (limit > MAX_LIMIT) {
+      limit = MAX_LIMIT;
+    }
+
+    const where = {
+      OR: [
+        { requesterBooks: { some: { ownerId: userId } } },
+        { providerBooks: { some: { ownerId: userId } } },
+      ],
+    };
+
+    // Count total items matching the criteria
+    const totalItems = await this.databaseService.exchange.count({
+      where,
+    });
+
+    // Calculate items to skip
+    const skip = (page - 1) * limit;
+
+    // Fetch items for the current page
+    const items = await this.databaseService.exchange.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { id: 'desc' }, // Order by most recent first (assuming higher IDs are more recent)
       include: {
         requesterBooks: true,
-        providerBooks: true
+        providerBooks: true,
       },
     });
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      }
+    };
   }
 
   async findByStatus(status: ExchangeStatus): Promise<Exchange[]> {
