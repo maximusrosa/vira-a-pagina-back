@@ -12,11 +12,11 @@ import {
 import { ModeratorService } from './moderator.service';
 import { UserService } from '../user/user.service';
 import { BookService, PaginatedBooks } from '../book/book.service';
+import { ExchangeService } from '../exchange/exchange.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
 import { Prisma } from '@prisma/client';
-import { ExchangeService } from '../exchange/exchange.service';
 
-@Controller('moderators')
+@Controller('moderator')
 export class ModeratorController {
   constructor(
     private readonly moderatorService: ModeratorService,
