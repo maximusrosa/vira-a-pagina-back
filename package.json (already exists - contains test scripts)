@@ -1,0 +1,11 @@
+{
+  "name": "project-name",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "your-test-command",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    // your dependencies here
+  }
+}
