@@ -64,9 +64,9 @@ model User {
   createdAt        DateTime     @default(now())
   booksLiked       Book[]       @relation("LikedBooks")
   
-  // Relações para matches
-  matchesAsUser1   Match[]      @relation("User1Matches")
-  matchesAsUser2   Match[]      @relation("User2Matches")
+  // Relações para exchanges
+  exchangesAsUser1   Exchange[] @relation("ExchangesAsUser1")
+  exchangesAsUser2   Exchange[] @relation("ExchangesAsUser2")
 }
 
 model Moderator {
@@ -92,21 +92,21 @@ model Book {
 
   requesterExchanges Exchange[]  @relation("RequesterBookExchange")
   providerExchanges Exchange[]   @relation("ProviderBookExchange")
-  
-  // Relações para matches
-  matchesAsUser1Book Match[]     @relation("User1BooksInMatch")
-  matchesAsUser2Book Match[]     @relation("User2BooksInMatch")
-  
+
   createdAt        DateTime      @default(now())
 }
 
 model Exchange {
   id               Int      @id @default(autoincrement())
-  match            Match    @relation("MatchExchanges", fields: [matchId], references: [id])
-  matchId          Int
+  provider         User     @relation("ExchangesAsUser1", fields: [providerId], references: [id])
+  providerId       Int
+  requester        User     @relation("ExchangesAsUser2", fields: [requesterId], references: [id])
+  requesterId      Int
 
-  requesterBooks   Book[]   @relation("RequesterBookExchange")
-  providerBooks    Book[]   @relation("ProviderBookExchange")
+  requesterBook    Book[]   @relation("RequesterBookExchange")
+  requesterBookId  Int
+  providerBook     Book[]   @relation("ProviderBookExchange")
+  providerBookId   Int
 
   status           ExchangeStatus @default(REQUESTED)
   requestDate      DateTime       @default(now())
@@ -124,23 +124,21 @@ model Evaluation {
   @@unique([raterId, ratedId])
 }
 
+// não utilizado no momento, mas pode ser útil no futuro
 model Match {
   id               Int      @id @default(autoincrement())
   
-  user1            User     @relation("User1Matches", fields: [user1Id], references: [id])
+  //user1            User     @relation("User1Matches", fields: [user1Id], references: [id])
   user1Id          Int
-  
-  user2            User     @relation("User2Matches", fields: [user2Id], references: [id])
+  //user2            User     @relation("User2Matches", fields: [user2Id], references: [id])
   user2Id          Int
   
   // Livros do user1 que interessam ao user2
-  booksUser1       Book[]   @relation("User1BooksInMatch")
-  
+  //booksUser1       Book[]   @relation("User1BooksInMatch")
   // Livros do user2 que interessam ao user1
-  booksUser2       Book[]   @relation("User2BooksInMatch")
-  
-  exchanges        Exchange[] @relation("MatchExchanges")
+  //booksUser2       Book[]   @relation("User2BooksInMatch")
 
+  //exchanges        Exchange[] @relation("MatchExchanges")
   createdAt        DateTime @default(now())
 
   @@unique([user1Id, user2Id])
