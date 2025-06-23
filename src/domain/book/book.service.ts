@@ -198,4 +198,59 @@ export class BookService {
       throw new NotFoundException(`Livro com id ${id} não encontrado.`);
     }
   }
+
+  /**
+   * Encontra livros de um usuário específico com paginação
+   */
+  async findByUser(userId: number, page: number = 1, limit: number = 10): Promise<PaginatedBooks> {
+    // Garantir valores mínimos
+    if (page < 1) {
+      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
+    }
+    if (limit < 1) {
+      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+    }
+    // (Opcional) limitar o máximo de "limit" para, por ex., 100 registros por vez
+    const MAX_LIMIT = 100;
+    if (limit > MAX_LIMIT) {
+      limit = MAX_LIMIT;
+    }
+
+    const where = { ownerId: userId };
+
+    // 1) Contar o total de livros no banco (com filtro por usuário)
+    const totalItems = await this.databaseService.book.count({
+      where,
+    });
+
+    // 2) Calcular quantos itens pular
+    const skip = (page - 1) * limit;
+
+    // 3) Buscar somente os registros "slice" da página
+    const items: Book[] = await this.databaseService.book.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      where,
+      include: {
+        owner: true,
+        requesterExchanges: true,
+        providerExchanges: true,
+      },
+    });
+
+    // 4) Calcular total de páginas (arredondando para cima)
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      }
+    };
+  }
 }

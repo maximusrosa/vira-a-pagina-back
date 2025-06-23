@@ -10,7 +10,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ModeratorService } from './moderator.service';
-import { UserService } from '../user/user.service';
+import { UserService, PaginatedUsers } from '../user/user.service';
 import { BookService, PaginatedBooks } from '../book/book.service';
 import { ExchangeService } from '../exchange/exchange.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
@@ -44,6 +44,17 @@ export class ModeratorController {
   @Get('exchanges')
   findAllExchanges() {
     return this.exchangeService.findWaitingForApproval();
+  }
+
+  @Get('users')
+  async findAllUsers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaginatedUsers> {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    console.log(pageNumber, limitNumber);
+    return this.userService.findAllWithPagination(pageNumber, limitNumber, false);
   }
 
   @Get('books')

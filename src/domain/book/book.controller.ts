@@ -71,4 +71,19 @@ export class BookController {
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.bookService.remove(id);
   }
+
+  /**
+   * GET /books/user/:userId
+   * Retorna lista paginada de livros de um usuário específico
+   */
+  @Get('user/:userId')
+  async findByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaginatedBooks> {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    return this.bookService.findByUser(userId, pageNumber, limitNumber);
+  }
 }

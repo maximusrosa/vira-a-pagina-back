@@ -2,6 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { Prisma } from '@prisma/client';
 
+export interface PaginatedUsers {
+  data: any[];
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+  };
+}
+
 @Injectable()
 export class UserService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -212,5 +221,44 @@ export class UserService {
         requesterBooks: { include: { owner: true } }
       }
     });
+  }
+
+  async findAllWithPagination(
+    page: number,
+    limit: number,
+    activeOnly: boolean,
+  ): Promise<PaginatedUsers> {
+    const skip = (page - 1) * limit;
+    
+    let whereClause = {};
+    if (activeOnly) {
+      whereClause = { status: 'ACTIVE' };
+    }
+
+    const [users, total] = await Promise.all([
+      this.databaseService.user.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          booksOwned: true,
+          ratingsReceived: true,
+          matchesAsUser1: true,
+          matchesAsUser2: true,
+        },
+      }),
+      this.databaseService.user.count({ where: whereClause })
+    ]);
+
+    const lastPage = Math.ceil(total / limit);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        lastPage,
+      },
+    };
   }
 }
