@@ -10,8 +10,9 @@ import {
 } from '@nestjs/common';
 import { ModeratorService } from './moderator.service';
 import { Prisma } from '@prisma/client';
+import { UpdateBookStatusDto } from './dtos/update-book-status.dto';
 
-@Controller('moderators')
+@Controller('moderator')
 export class ModeratorController {
   constructor(private readonly moderatorService: ModeratorService) {}
 
@@ -41,5 +42,13 @@ export class ModeratorController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.moderatorService.remove(id);
+  }
+
+  @Patch('book/:id')
+  updateBookStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateBookStatusDto: UpdateBookStatusDto,
+  ) {
+    return this.moderatorService.updateBookStatus(id, updateBookStatusDto.status);
   }
 }

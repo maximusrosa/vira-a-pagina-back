@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, BookStatus } from '@prisma/client';
 
 @Injectable()
 export class ModeratorService {
@@ -38,6 +38,40 @@ export class ModeratorService {
   async remove(id: number) {
     return this.databaseService.moderator.delete({
       where: { id },
+    });
+  }
+
+  async updateBookStatus(bookId: number, status: BookStatus) {
+    // Verify book exists
+    const book = await this.databaseService.book.findUnique({
+      where: { id: bookId },
+    });
+
+    if (!book) {
+      throw new NotFoundException(`Livro com id ${bookId} não encontrado.`);
+    }
+
+    // If status is REJECTED, delete the book instead of updating its status
+    if (status === BookStatus.REJECTED) {
+      return this.databaseService.book.delete({
+        where: { id: bookId },
+        include: {
+          owner: true,
+          requesterExchanges: true,
+          providerExchanges: true,
+        },
+      });
+    }
+
+    // Update book status
+    return this.databaseService.book.update({
+      where: { id: bookId },
+      data: { status },
+      include: {
+        owner: true,
+        requesterExchanges: true,
+        providerExchanges: true,
+      },
     });
   }
 }
