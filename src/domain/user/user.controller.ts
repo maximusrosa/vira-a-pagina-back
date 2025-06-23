@@ -31,11 +31,6 @@ export class UserController {
     return this.userService.findByEmail(email, true);
   }
 
-  @Get('mod/email/:email')
-  findByEmailMod(@Param('email') email: string) {
-    return this.userService.findByEmail(email, false);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id, true);
@@ -56,6 +51,7 @@ export class UserController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    console.log('ID:', id);
     return this.userService.remove(+id);
   }
 }

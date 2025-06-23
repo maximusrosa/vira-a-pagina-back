@@ -8,15 +8,20 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ExchangeService } from './exchange.service';
+import { MatchService } from '../match/match.service';
 import { CreateExchangeDto } from './dtos/create-exchange.dto';
 import { UpdateExchangeDto } from './dtos/update-exchange.dto';
 import { Exchange, ExchangeStatus } from '@prisma/client';
 
 @Controller('exchanges')
 export class ExchangeController {
-  constructor(private readonly exchangeService: ExchangeService) {}
+  constructor(
+    private readonly exchangeService: ExchangeService,
+    private readonly matchService: MatchService
+  ) {}
 
   @Post()
   async create(@Body() createExchangeDto: CreateExchangeDto): Promise<Exchange> {
@@ -64,6 +69,33 @@ export class ExchangeController {
     @Body() updateExchangeDto: UpdateExchangeDto,
   ): Promise<Exchange> {
     return this.exchangeService.update(id, updateExchangeDto);
+  }
+
+  @Patch(':id/accept')
+  async accept(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('userId', ParseIntPipe) userId: number, 
+): Promise<Exchange> {
+    const { providerId } = await this.exchangeService.getProviderId(id);
+
+    if (userId !== providerId) {
+      throw new ForbiddenException('Usuário não faz parte desta troca.');
+    }
+
+    return this.exchangeService.update(id, { status: 'WAITING_APPROVAL' });
+  }
+
+  @Delete(':id/reject')
+  async reject(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('userId', ParseIntPipe) userId: number): Promise<void> {
+    const { providerId } = await this.exchangeService.getProviderId(id);
+
+    if (userId !== providerId) {
+      throw new ForbiddenException('Usuário não faz parte desta troca.');
+    }
+
+    return this.exchangeService.remove(id);
   }
 
   @Delete(':id')

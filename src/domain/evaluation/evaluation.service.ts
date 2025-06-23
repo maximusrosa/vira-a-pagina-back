@@ -64,11 +64,20 @@ export class EvaluationService {
     return evaluation;
   }
 
-  async findByUser(userId: number) {
+  async findByUserRated(userId: number) {
     return this.databaseService.evaluation.findMany({
       where: { ratedId: userId },
       include: {
         rater: true,
+      },
+    });
+  }
+
+  async findByUserRater(userId: number) {
+    return this.databaseService.evaluation.findMany({
+      where: { raterId: userId },
+      include: {
+        rated: true
       },
     });
   }

@@ -143,7 +143,7 @@ export class ExchangeService {
       },
       include: {
         requesterBooks: true,
-        providerBooks: true,
+        providerBooks: true
       },
     });
   }
@@ -161,4 +161,19 @@ export class ExchangeService {
   async findWaitingForApproval(): Promise<Exchange[]> {
     return this.findByStatus(ExchangeStatus.WAITING_APPROVAL);
   }
+
+  async getProviderId(exchangeId: number): Promise<{ providerId: number }> {
+    const exchange = await this.databaseService.exchange.findUnique({
+      where: { id: exchangeId },
+      include: {
+        providerBooks: true,
+      },
+    });
+    if (!exchange) {
+      throw new NotFoundException(`Troca com id ${exchangeId} não encontrada.`);
+    }
+    const providerId = exchange.providerBooks[0].ownerId;
+
+    return { providerId };
+}
 }

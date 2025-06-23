@@ -33,10 +33,13 @@ export class BookController {
    */
   @Get()
   async findAll(
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: 400 })) page = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: 400 })) limit = 10,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ): Promise<PaginatedBooks> {
-    return this.bookService.findAllWithPagination(page, limit);
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    console.log(pageNumber, limitNumber);
+    return this.bookService.findAllWithPagination(pageNumber, limitNumber, true);
   }
 
   /**

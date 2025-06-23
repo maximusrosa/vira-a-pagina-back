@@ -32,9 +32,14 @@ export class EvaluationController {
     return this.evaluationService.findOne(id);
   }
 
-  @Get('user/:userId')
-  async findByUser(@Param('userId', ParseIntPipe) userId: number): Promise<Evaluation[]> {
-    return this.evaluationService.findByUser(userId);
+  @Get('rated/:userId')
+  async findByUserRated(@Param('userId', ParseIntPipe) userId: number): Promise<Evaluation[]> {
+    return this.evaluationService.findByUserRated(userId);
+  }
+
+  @Get('rater/:userId')
+  async findByUserRater(@Param('userId', ParseIntPipe) userId: number): Promise<Evaluation[]> {
+    return this.evaluationService.findByUserRater(userId);
   }
 
   @Patch(':id')

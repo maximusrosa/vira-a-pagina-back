@@ -66,9 +66,10 @@ export class BookService {
   /**
    * Retorna todos os livros. Podemos incluir relações (owner, authorizer, exchanges).
    */
-    async findAllWithPagination(
+    async findAllWithPagination (
         page: number,
         limit: number,
+        availableOnly: boolean
     ): Promise<PaginatedBooks> {
         // Garantir valores mínimos
         if (page < 1) {
@@ -83,8 +84,16 @@ export class BookService {
             limit = MAX_LIMIT;
         }
 
-        // 1) Contar o total de livros no banco (sem filtros)
-        const totalItems = await this.databaseService.book.count();
+        const statusFilter = availableOnly
+          ? { status: 'AVAILABLE' }
+          : { status: { in: ['AVAILABLE', 'WAITING_PUBLICATION_APPROVAL'] }
+        };
+        const where: any = { ...statusFilter };
+
+        // 1) Contar o total de livros no banco (com filtro se necessário)
+        const totalItems = await this.databaseService.book.count({
+          where,
+        });
 
         // 2) Calcular quantos itens pular
         const skip = (page - 1) * limit;
@@ -94,6 +103,7 @@ export class BookService {
             skip,
             take: limit,
             orderBy: { createdAt: 'desc' },
+            where,
             include: {
                 owner: true,
                 requesterExchanges: true,
