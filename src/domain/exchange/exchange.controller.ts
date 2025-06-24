@@ -27,8 +27,8 @@ export class ExchangeController {
   }
 
   @Get()
-  async findAll(): Promise<Exchange[]> {
-    return this.exchangeService.findAll();
+  async findAll(): Promise<PaginatedExchanges> {
+    return this.exchangeService.findAllWithPagination();
   }
 
   @Get('requester/:userId')

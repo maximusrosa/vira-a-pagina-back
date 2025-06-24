@@ -68,13 +68,56 @@ export class ExchangeService {
     });
   }
 
-  async findAll() {
-    return this.databaseService.exchange.findMany({
+  async findAllWithPagination(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<PaginatedExchanges> {
+    // Validate pagination parameters
+    if (page < 1) {
+      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
+    }
+    if (limit < 1) {
+      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+    }
+    
+    // Optional: limit the maximum number of items per page
+    const MAX_LIMIT = 100;
+    if (limit > MAX_LIMIT) {
+      limit = MAX_LIMIT;
+    }
+
+    // Count total items
+    const totalItems = await this.databaseService.exchange.count();
+
+    // Calculate items to skip
+    const skip = (page - 1) * limit;
+
+    // Fetch items for the current page
+    const items = await this.databaseService.exchange.findMany({
+      skip,
+      take: limit,
+      orderBy: { id: 'desc' },
       include: {
         requesterBook: true,
         providerBook: true,
+        requester: true,
+        provider: true,
       },
     });
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      }
+    };
   }
 
   async findOne(id: number): Promise<Exchange> {
