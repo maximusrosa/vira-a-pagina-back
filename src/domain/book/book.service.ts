@@ -253,4 +253,79 @@ export class BookService {
       }
     };
   }
+
+  /**
+   * Busca livros por título com paginação
+   */
+  async searchByTitle(
+    title: string,
+    page: number = 1,
+    limit: number = 10,
+    availableOnly: boolean = false
+  ): Promise<PaginatedBooks> {
+    // Garantir valores mínimos
+    if (page < 1) {
+      throw new BadRequestException('O parâmetro "page" deve ser >= 1.');
+    }
+    if (limit < 1) {
+      throw new BadRequestException('O parâmetro "limit" deve ser >= 1.');
+    }
+    // (Opcional) limitar o máximo de "limit"
+    const MAX_LIMIT = 100;
+    if (limit > MAX_LIMIT) {
+      limit = MAX_LIMIT;
+    }
+
+    // Validar se o título não está vazio
+    if (!title || title.trim().length === 0) {
+      throw new BadRequestException('O parâmetro "title" não pode estar vazio.');
+    }
+
+    const statusFilter = availableOnly
+      ? { status: BookStatus.AVAILABLE }
+      : { status: { in: [BookStatus.AVAILABLE, BookStatus.WAITING_PUBLICATION_APPROVAL] } };
+
+    const where = {
+      title: {
+        contains: title.trim(),
+        mode: 'insensitive' as const,
+      },
+      ...statusFilter,
+    };
+
+    // 1) Contar o total de livros encontrados
+    const totalItems = await this.databaseService.book.count({
+      where,
+    });
+
+    // 2) Calcular quantos itens pular
+    const skip = (page - 1) * limit;
+
+    // 3) Buscar os registros da página
+    const items: Book[] = await this.databaseService.book.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      where,
+      include: {
+        owner: true,
+        requesterExchanges: true,
+        providerExchanges: true,
+      },
+    });
+
+    // 4) Calcular total de páginas
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
+  }
 }

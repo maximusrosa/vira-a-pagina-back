@@ -36,11 +36,6 @@ export class UserController {
     return this.userService.findOne(+id, true);
   }
 
-  @Get('first5')
-  findFirst5() {
-    return this.userService.findFirst5(true);
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,

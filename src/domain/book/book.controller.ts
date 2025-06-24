@@ -43,6 +43,23 @@ export class BookController {
   }
 
   /**
+   * GET /books/search
+   * Busca livros por título com paginação
+   */
+  @Get('search')
+  async searchByTitle(
+    @Query('title') title: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('availableOnly') availableOnly?: string,
+  ): Promise<PaginatedBooks> {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    const availableOnlyFlag = availableOnly === 'true';
+    return this.bookService.searchByTitle(title, pageNumber, limitNumber, availableOnlyFlag);
+  }
+
+  /**
    * GET /books/:id
    * Retorna um único livro por id (ParseIntPipe garante que id é número).
    */

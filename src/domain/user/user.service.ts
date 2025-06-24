@@ -74,38 +74,6 @@ export class UserService {
     });
   }
 
-  async findFirst5(activeOnly: boolean) {
-    if (activeOnly) {
-      return this.databaseService.user.findMany({
-        where: { status: 'ACTIVE' },
-        take: 5,
-        orderBy: { id: 'asc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          uniCard: true,
-          course: true,
-          rating: true,
-          status: true
-        },
-      });
-    }
-    return this.databaseService.user.findMany({
-      take: 5,
-      orderBy: { id: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        uniCard: true,
-        course: true,
-        rating: true,
-        status: true
-      },
-    });
-  }
-
   async findByEmail(email: string, activeOnly: boolean): Promise<any | undefined> {
     if (activeOnly) {
       return await this.databaseService.user.findFirst({
