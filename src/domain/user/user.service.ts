@@ -157,32 +157,6 @@ export class UserService {
     });
   }
 
-  // Get exchanges where user is the requester
-  async getUserAsRequesterExchanges(userId: number) {
-    return this.databaseService.exchange.findMany({
-      where: {
-        requesterId: userId
-      },
-      include: {
-        requesterBook: { include: { owner: true } },
-        providerBook: { include: { owner: true } }
-      }
-    });
-  }
-
-  // Get exchanges where user is the provider
-  async getUserAsProviderExchanges(userId: number) {
-    return this.databaseService.exchange.findMany({
-      where: {
-        providerId: userId
-      },
-      include: {
-        requesterBook: { include: { owner: true } },
-        providerBook: { include: { owner: true } }
-      }
-    });
-  }
-
   async findAllWithPagination(
     page: number,
     limit: number,
