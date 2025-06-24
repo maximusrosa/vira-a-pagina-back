@@ -1,7 +1,4 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator';
-import { UserStatus } from '@prisma/client';
-import { User } from '../entities/user.entity';
-
 
 export class CreateUserDto {
   @IsNotEmpty()

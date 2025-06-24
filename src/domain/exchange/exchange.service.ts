@@ -178,6 +178,8 @@ export class ExchangeService {
       include: {
         requesterBook: true,
         providerBook: true,
+        requester: true,
+        provider: true,
       },
     });
 
