@@ -52,17 +52,19 @@ async function createBook(data: {
 
 // Função para criar um exchange
 async function createExchange(data: {
-  matchId: number;
-  requesterBooksIds: number[];
-  providerBooksIds: number[];
+  requesterBookId: number;
+  providerBookId: number;
+  requesterId: number;
+  providerId: number;
   status?: string;
   completionDate?: Date;
 }): Promise<any> {
   return prisma.exchange.create({
     data: {
-      match: { connect: { id: data.matchId } },
-      requesterBooks: { connect: data.requesterBooksIds.map(id => ({ id })) },
-      providerBooks: { connect: data.providerBooksIds.map(id => ({ id })) },
+      requesterBookId: data.requesterBookId,
+      providerBookId: data.providerBookId,
+      requesterId: data.requesterId,
+      providerId: data.providerId,
       status: ExchangeStatus.REQUESTED,
       completionDate: data.completionDate,
     },
@@ -230,6 +232,23 @@ async function main() {
   console.log(`- Book ID: ${book4.id} - ${book4.title} (Owner: ${user1.id})`);
   console.log(`- Book ID: ${book5.id} - ${book5.title} (Owner: ${user1.id})`);
   console.log(`- Book ID: ${book6.id} - ${book6.title} (Owner: ${user2.id})`);
+
+  // Exemplo de criação de exchanges (novos parâmetros)
+  const exchange1 = await createExchange({
+    requesterBookId: book1.id,
+    providerBookId: book2.id,
+    requesterId: user1.id,
+    providerId: user2.id
+  });
+
+  const exchange2 = await createExchange({
+    requesterBookId: book3.id,
+    providerBookId: book4.id,
+    requesterId: user3.id,
+    providerId: user4.id
+  });
+
+  console.log('Exchanges criadas:', exchange1.id, exchange2.id);
 
   console.log('Seed concluído com sucesso!');
 }

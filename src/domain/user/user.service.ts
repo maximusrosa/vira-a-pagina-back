@@ -21,8 +21,8 @@ export class UserService {
         booksOwned: true,
         ratingsGiven: true,
         ratingsReceived: true,
-        matchesAsUser1: true,
-        matchesAsUser2: true,
+        exchangesAsUser1: true,
+        exchangesAsUser2: true,
       }
     });
   }
@@ -34,8 +34,8 @@ export class UserService {
         include: {
           booksOwned: true,
           ratingsReceived: true,
-          matchesAsUser1: true,
-          matchesAsUser2: true,
+          exchangesAsUser1: true,
+          exchangesAsUser2: true,
         }
       });
     }
@@ -43,8 +43,8 @@ export class UserService {
       include: {
         booksOwned: true,
         ratingsReceived: true,
-        matchesAsUser1: true,
-        matchesAsUser2: true,
+        exchangesAsUser1: true,
+        exchangesAsUser2: true,
       }
     });
   }
@@ -57,8 +57,8 @@ export class UserService {
           booksOwned: true,
           ratingsGiven: true,
           ratingsReceived: true,
-          matchesAsUser1: true,
-          matchesAsUser2: true
+          exchangesAsUser1: true,
+          exchangesAsUser2: true
         }
       });
     }
@@ -68,8 +68,8 @@ export class UserService {
         booksOwned: true,
         ratingsGiven: true,
         ratingsReceived: true,
-        matchesAsUser1: true,
-        matchesAsUser2: true
+        exchangesAsUser1: true,
+        exchangesAsUser2: true
       }
     });
   }
@@ -157,8 +157,8 @@ export class UserService {
         booksOwned: true,
         ratingsGiven: true,
         ratingsReceived: true,
-        matchesAsUser1: true,
-        matchesAsUser2: true,
+        exchangesAsUser1: true,
+        exchangesAsUser2: true,
       }
     });
   }
@@ -174,51 +174,43 @@ export class UserService {
     return this.databaseService.exchange.findMany({
       where: {
         OR: [
-          { requesterBooks: { some: { ownerId: userId } } },
-          { providerBooks: { some: { ownerId: userId } } }
+          { requesterId: userId },
+          { providerId: userId }
         ]
       },
       include: {
-        match: {
-          include: {
-            user1: true,
-            user2: true
-          }
-        },
-        requesterBooks: {
+        requesterBook: {
           include: { owner: true }
         },
-        providerBooks: {
+        providerBook: {
           include: { owner: true }
         }
       }
     });
   }
 
-  // Get exchanges where user is the requester (owns books in requesterBooks)
+  // Get exchanges where user is the requester
   async getUserAsRequesterExchanges(userId: number) {
     return this.databaseService.exchange.findMany({
       where: {
-        requesterBooks: { some: { ownerId: userId } }
+        requesterId: userId
       },
       include: {
-        match: true,
-        requesterBooks: true,
-        providerBooks: { include: { owner: true } }
+        requesterBook: { include: { owner: true } },
+        providerBook: { include: { owner: true } }
       }
     });
   }
 
-  // Get exchanges where user is the provider (owns books in providerBooks)
+  // Get exchanges where user is the provider
   async getUserAsProviderExchanges(userId: number) {
     return this.databaseService.exchange.findMany({
       where: {
-        providerBooks: { some: { ownerId: userId } }
+        providerId: userId
       },
       include: {
-        match: true,
-        providerBooks: true,
-        requesterBooks: { include: { owner: true } }
+        requesterBook: { include: { owner: true } },
+        providerBook: { include: { owner: true } }
       }
     });
   }
@@ -243,8 +235,8 @@ export class UserService {
         include: {
           booksOwned: true,
           ratingsReceived: true,
-          matchesAsUser1: true,
-          matchesAsUser2: true,
+          exchangesAsUser1: true,
+          exchangesAsUser2: true,
         },
       }),
       this.databaseService.user.count({ where: whereClause })

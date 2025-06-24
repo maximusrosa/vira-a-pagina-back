@@ -9,7 +9,6 @@ import { BookModule } from './domain/book/book.module';
 import { ModeratorModule } from './domain/moderator/moderator.module';
 import { ExchangeModule } from './domain/exchange/exchange.module';
 import { EvaluationModule } from './domain/evaluation/evaluation.module';
-import { MatchModule } from './domain/match/match.module';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { MatchModule } from './domain/match/match.module';
     AuthModule,
     BookModule,
     ModeratorModule,
-    MatchModule,
     ExchangeModule,
     EvaluationModule,
   ],

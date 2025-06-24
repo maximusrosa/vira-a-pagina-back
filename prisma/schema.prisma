@@ -103,9 +103,9 @@ model Exchange {
   requester        User     @relation("ExchangesAsUser2", fields: [requesterId], references: [id])
   requesterId      Int
 
-  requesterBook    Book[]   @relation("RequesterBookExchange")
+  requesterBook    Book   @relation("RequesterBookExchange", fields: [requesterBookId], references: [id])
   requesterBookId  Int
-  providerBook     Book[]   @relation("ProviderBookExchange")
+  providerBook     Book   @relation("ProviderBookExchange", fields: [providerBookId], references: [id])
   providerBookId   Int
 
   status           ExchangeStatus @default(REQUESTED)

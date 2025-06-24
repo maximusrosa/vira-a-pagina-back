@@ -11,7 +11,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ExchangeService, PaginatedExchanges } from './exchange.service';
-import { MatchService } from '../match/match.service';
 import { CreateExchangeDto } from './dtos/create-exchange.dto';
 import { UpdateExchangeDto } from './dtos/update-exchange.dto';
 import { Exchange, ExchangeStatus } from '@prisma/client';
@@ -19,8 +18,7 @@ import { Exchange, ExchangeStatus } from '@prisma/client';
 @Controller('exchanges')
 export class ExchangeController {
   constructor(
-    private readonly exchangeService: ExchangeService,
-    private readonly matchService: MatchService
+    private readonly exchangeService: ExchangeService
   ) {}
 
   @Post()

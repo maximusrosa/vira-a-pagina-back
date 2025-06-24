@@ -20,47 +20,50 @@ export class ExchangeService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createDto: CreateExchangeDto): Promise<Exchange> {
-    // Validar todos os livros do solicitante
-    const requesterBooks = await this.databaseService.book.findMany({
-      where: { id: { in: createDto.requesterBooksIds } },
+    // Validar livro do solicitante
+    const requesterBook = await this.databaseService.book.findUnique({
+      where: { id: createDto.requesterBookId },
     });
-    if (requesterBooks.length !== createDto.requesterBooksIds.length) {
-      throw new NotFoundException('Um ou mais livros do solicitante não foram encontrados.');
+    if (!requesterBook) {
+      throw new NotFoundException('Livro do solicitante não foi encontrado.');
     }
-    requesterBooks.forEach(book => {
-      if (book.status !== BookStatus.AVAILABLE) {
-        throw new BadRequestException(
-          `Livro do solicitante (id ${book.id}) não está disponível para troca. Status atual: ${book.status}`,
-        );
-      }
-    });
+    if (requesterBook.status !== BookStatus.AVAILABLE) {
+      throw new BadRequestException(
+        `Livro do solicitante (id ${requesterBook.id}) não está disponível para troca. Status atual: ${requesterBook.status}`,
+      );
+    }
 
-    // Validar todos os livros do provedor
-    const providerBooks = await this.databaseService.book.findMany({
-      where: { id: { in: createDto.providerBooksIds } },
+    // Validar livro do provedor
+    const providerBook = await this.databaseService.book.findUnique({
+      where: { id: createDto.providerBookId },
     });
-    if (providerBooks.length !== createDto.providerBooksIds.length) {
-      throw new NotFoundException('Um ou mais livros do provedor não foram encontrados.');
+    if (!providerBook) {
+      throw new NotFoundException('Livro do provedor não foi encontrado.');
     }
-    providerBooks.forEach(book => {
-      if (book.status !== BookStatus.AVAILABLE) {
-        throw new BadRequestException(
-          `Livro do provedor (id ${book.id}) não está disponível para troca. Status atual: ${book.status}`,
-        );
-      }
-    });
+    if (providerBook.status !== BookStatus.AVAILABLE) {
+      throw new BadRequestException(
+        `Livro do provedor (id ${providerBook.id}) não está disponível para troca. Status atual: ${providerBook.status}`,
+      );
+    }
+
+    // Validar usuários
+    const requester = await this.databaseService.user.findUnique({ where: { id: createDto.requesterId } });
+    if (!requester) throw new NotFoundException('Solicitante não encontrado.');
+    const provider = await this.databaseService.user.findUnique({ where: { id: createDto.providerId } });
+    if (!provider) throw new NotFoundException('Provedor não encontrado.');
 
     return this.databaseService.exchange.create({
       data: {
-        match: { connect: { id: createDto.matchId } },
-        requesterBooks: { connect: createDto.requesterBooksIds.map(id => ({ id })) },
-        providerBooks: { connect: createDto.providerBooksIds.map(id => ({ id })) },
+        requesterId: createDto.requesterId,
+        providerId: createDto.providerId,
+        requesterBookId: createDto.requesterBookId,
+        providerBookId: createDto.providerBookId,
         status: ExchangeStatus.REQUESTED,
         completionDate: createDto.completionDate,
       },
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -68,8 +71,8 @@ export class ExchangeService {
   async findAll() {
     return this.databaseService.exchange.findMany({
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -78,8 +81,8 @@ export class ExchangeService {
     const exchange = await this.databaseService.exchange.findUnique({
       where: { id },
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
     if (!exchange) {
@@ -98,8 +101,8 @@ export class ExchangeService {
       where: { id },
       data: updateDto,
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -115,15 +118,11 @@ export class ExchangeService {
   async findByRequester(requesterId: number): Promise<Exchange[]> {
     return this.databaseService.exchange.findMany({
       where: {
-        requesterBooks: {
-          some: {
-            ownerId: requesterId,
-          },
-        },
+        requesterId,
       },
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -131,15 +130,11 @@ export class ExchangeService {
   async findByProvider(providerId: number): Promise<Exchange[]> {
     return this.databaseService.exchange.findMany({
       where: {
-        providerBooks: {
-          some: {
-            ownerId: providerId,
-          },
-        },
+        providerId,
       },
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -161,8 +156,8 @@ export class ExchangeService {
 
     const where = {
       OR: [
-        { requesterBooks: { some: { ownerId: userId } } },
-        { providerBooks: { some: { ownerId: userId } } },
+        { requesterId: userId },
+        { providerId: userId },
       ],
     };
 
@@ -181,8 +176,8 @@ export class ExchangeService {
       take: limit,
       orderBy: { id: 'desc' }, // Order by most recent first (assuming higher IDs are more recent)
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
 
@@ -205,8 +200,8 @@ export class ExchangeService {
     return this.databaseService.exchange.findMany({
       where: { status },
       include: {
-        requesterBooks: true,
-        providerBooks: true,
+        requesterBook: true,
+        providerBook: true,
       },
     });
   }
@@ -218,15 +213,10 @@ export class ExchangeService {
   async getProviderId(exchangeId: number): Promise<{ providerId: number }> {
     const exchange = await this.databaseService.exchange.findUnique({
       where: { id: exchangeId },
-      include: {
-        providerBooks: true,
-      },
     });
     if (!exchange) {
       throw new NotFoundException(`Troca com id ${exchangeId} não encontrada.`);
     }
-    const providerId = exchange.providerBooks[0].ownerId;
-
-    return { providerId };
-}
+    return { providerId: exchange.providerId };
+  }
 }
